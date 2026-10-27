@@ -1,0 +1,54 @@
+{
+  "provider": "kokoro",
+  "model": "Kokoro-82M",
+  "license": "Apache-2.0",
+  "chapters": {
+    "gen:1": {
+      "status": "done",
+      "completedAt": "2026-10-26T15:12:30+00:00",
+      "path": "en-kjv/gen/1.mp3",
+      "size": 2094380,
+      "objectKey": "en-kjv/gen/1.mp3"
+    },
+    "gen:2": {
+      "status": "done",
+      "completedAt": "2026-10-26T15:12:37+00:00",
+      "path": "en-kjv/gen/2.mp3",
+      "size": 1576364,
+      "objectKey": "en-kjv/gen/2.mp3"
+    },
+    "gen:3": {
+      "status": "done",
+      "completedAt": "2026-10-26T15:12:43+00:00",
+      "path": "en-kjv/gen/3.mp3",
+      "size": 1743980,
+      "objectKey": "en-kjv/gen/3.mp3"
+    },
+    "gen:4": {
+      "status": "done",
+      "completedAt": "2026-10-26T15:07:06+00:00",
+      "path": "en-kjv/gen/4.mp3",
+      "size": 1710188,
+      "uploadError": "Could not connect to the endpoint URL: \"http://127.0.0.1:9000/bible-audio/en-kjv/gen/4.mp3\""
+    },
+    "psa:1": {
+      "status": "done",
+      "completedAt": "2026-10-26T15:12:58+00:00",
+      "path": "en-kjv/psa/1.mp3",
+      "size": 353900,
+      "objectKey": "en-kjv/psa/1.mp3"
+    },
+    "psa:2": {
+      "status": "done",
+      "completedAt": "2026-10-26T15:13:01+00:00",
+      "path": "en-kjv/psa/2.mp3",
+      "size": 551660,
+      "objectKey": "en-kjv/psa/2.mp3"
+    }
+  },
+  "translation": "en-kjv",
+  "modelLicense": "Apache-2.0",
+  "voice": "af_heart",
+  "language": "a",
+  "speechVersion": 2
+}
