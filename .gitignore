@@ -69,3 +69,4 @@ deploy/.env
 
 # Copilot CLI local history can contain secrets
 .lh/
+copilot-session-*.md

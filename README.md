@@ -299,6 +299,16 @@ The source code is Apache-2.0 licensed in `LICENSE`. Generated interpretation
 and audio releases use the separate policy in `DATA_LICENSE.md`; review and
 update that policy for each translation, model, voice, and research setup.
 
+The generated KJV narration is published on Hugging Face:
+
+- [Bible AI — KJV audio](https://huggingface.co/datasets/Tomopas/bibleai-audio):
+  1,189 chapter MP3s (about 2.1 GB) generated with Kokoro-82M voice
+  `af_heart`.
+
+The dataset includes `audio-manifest.sha256` for verifying every file. The
+generated audio is not stored in this Git repository; the dataset card source
+is kept in `docs/hf-dataset-card.md`.
+
 Export interpretations as a public, portable JSON file:
 
 ```bash
