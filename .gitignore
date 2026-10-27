@@ -20,7 +20,6 @@ migrate_working_dir/
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
 #.vscode/
 
 # Flutter/Dart/Pub related
@@ -52,10 +51,11 @@ venv/
 __pycache__/
 
 # Runtime data: translation cache, databases, checkpoints, and generated audio
-data/
-backend/data/
-worker/data/
-exports/
+-backend/data/
+-worker/data/
+lib/**/*
+assets/**/*
+data/**/*
 **/*.db
 **/*.sqlite
 **/*.sqlite3

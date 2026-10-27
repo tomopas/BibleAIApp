@@ -1,7 +1,7 @@
 import json, shutil
 from pathlib import Path
 
-root = Path(r"E:\Projects\AndroidProjects\Flutter\BibleAIApp")
+root = Path(".")
 catalog = json.loads((root / "server" / "catalog.json").read_text(encoding="utf-8"))
 out = root / "assets" / "data" / "catalog_fallback.json"
 out.parent.mkdir(parents=True, exist_ok=True)
