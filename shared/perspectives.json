@@ -1,0 +1,146 @@
+[
+  {
+    "id": "catholic",
+    "label": "Catholic",
+    "short": "Sacramental & magisterial",
+    "description": "Reads with the Catholic canon, the sacraments, the Church Fathers and the teaching office of the Church.",
+    "color": "#9A4A3A",
+    "icon": "church"
+  },
+  {
+    "id": "protestant",
+    "label": "Protestant / Reformed",
+    "short": "Scripture, grace & covenant",
+    "description": "Reads through Reformation emphases such as grace alone, faith alone, covenant and the clarity of Scripture.",
+    "color": "#3E6B5A",
+    "icon": "menu_book"
+  },
+  {
+    "id": "orthodox",
+    "label": "Orthodox",
+    "short": "Theosis & liturgy",
+    "description": "Reads within the Eastern Orthodox liturgical and patristic tradition, with attention to deification and mystery.",
+    "color": "#7A5C99",
+    "icon": "auto_awesome"
+  },
+  {
+    "id": "historical_critical",
+    "label": "Historical-critical",
+    "short": "Context, sources & history",
+    "description": "Asks about the historical setting, literary sources, redaction and the world behind the text, without confessional commitment.",
+    "color": "#4B6178",
+    "icon": "history_edu"
+  },
+  {
+    "id": "jewish",
+    "label": "Jewish",
+    "short": "Tanakh & Jewish reading",
+    "description": "Reads the text within Jewish scripture, interpretation and practice, often highlighting covenantal and communal dimensions.",
+    "color": "#2F6690",
+    "icon": "star"
+  },
+  {
+    "id": "evangelical",
+    "label": "Evangelical",
+    "short": "Conversion & mission",
+    "description": "Highlights personal conversion, the authority of Scripture, evangelism and a living relationship with Christ.",
+    "color": "#B5651D",
+    "icon": "local_fire_department"
+  },
+  {
+    "id": "anglican",
+    "label": "Anglican",
+    "short": "Scripture, reason & tradition",
+    "description": "Reads with the Book of Common Prayer, the Anglican via media and the interplay of Scripture, reason and tradition.",
+    "color": "#5C6B73",
+    "icon": "account_balance"
+  },
+  {
+    "id": "lutheran",
+    "label": "Lutheran",
+    "short": "Law & gospel",
+    "description": "Reads through the distinction of law and gospel, justification by faith and the theology of the cross.",
+    "color": "#8A4B2A",
+    "icon": "gavel"
+  },
+  {
+    "id": "baptist",
+    "label": "Baptist",
+    "short": "Believers & the local church",
+    "description": "Emphasises personal faith, believer's baptism, congregational life and the priesthood of all believers.",
+    "color": "#476C3F",
+    "icon": "water_drop"
+  },
+  {
+    "id": "methodist",
+    "label": "Methodist / Wesleyan",
+    "short": "Grace & holiness",
+    "description": "Reads with Wesleyan emphases on prevenient grace, sanctification and social holiness.",
+    "color": "#A0522D",
+    "icon": "groups"
+  },
+  {
+    "id": "pentecostal",
+    "label": "Pentecostal / Charismatic",
+    "short": "Spirit & empowerment",
+    "description": "Reads with attention to the Holy Spirit, spiritual gifts, renewal and the empowering presence of God.",
+    "color": "#C05621",
+    "icon": "bolt"
+  },
+  {
+    "id": "adventist",
+    "label": "Adventist",
+    "short": "Sabbath & hope",
+    "description": "Reads with Seventh-day Adventist emphases on the Sabbath, the sanctuary, health and the blessed hope.",
+    "color": "#4C6E91",
+    "icon": "wb_sunny"
+  },
+  {
+    "id": "messianic",
+    "label": "Messianic",
+    "short": "Jewish context & Messiah",
+    "description": "Reads the whole Bible with Jewish context and practice while confessing Jesus as Messiah.",
+    "color": "#3B7A7A",
+    "icon": "menu_book"
+  },
+  {
+    "id": "liberation",
+    "label": "Liberation",
+    "short": "Justice & the poor",
+    "description": "Asks how the text confronts oppression and calls communities toward justice, solidarity and liberation.",
+    "color": "#9B2C2C",
+    "icon": "balance"
+  },
+  {
+    "id": "feminist",
+    "label": "Feminist",
+    "short": "Gender & power",
+    "description": "Attends to women, gender, power and overlooked voices in the text and its interpretation.",
+    "color": "#9D3C72",
+    "icon": "diversity_3"
+  },
+  {
+    "id": "literary",
+    "label": "Literary",
+    "short": "Narrative, poetry & rhetoric",
+    "description": "Reads the passage as literature: structure, imagery, narrative technique, rhetoric and intertextuality.",
+    "color": "#6B5B95",
+    "icon": "format_quote"
+  },
+  {
+    "id": "secular",
+    "label": "Secular / skeptic",
+    "short": "Natural & ethical reading",
+    "description": "Reads without religious commitment, asking about human authorship, ethics, power and natural explanations.",
+    "color": "#5F6B6D",
+    "icon": "psychology"
+  },
+  {
+    "id": "devotional",
+    "label": "Devotional",
+    "short": "Prayer & formation",
+    "description": "Reads for prayer, consolation and personal formation, in the tradition of lectio divina.",
+    "color": "#A67C2E",
+    "icon": "self_improvement"
+  }
+]

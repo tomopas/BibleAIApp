@@ -1,0 +1,113 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  flutter:
+    name: Flutter checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.44.0"
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build apk --debug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bible-ai-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+
+  python:
+    name: Python checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile Python sources
+        run: |
+          python -m compileall -q backend worker tools
+
+      - name: Validate Docker Compose configuration
+        env:
+          MONGO_URI: mongodb://127.0.0.1:27017
+          MONGO_DB: bibleai
+          AUDIO_S3_ACCESS_KEY: ci-access
+          AUDIO_S3_SECRET_KEY: ci-secret
+          AUDIO_S3_BUCKET: bible-audio
+          AUDIO_S3_REGION: us-east-1
+          AUDIO_S3_ENDPOINT: http://127.0.0.1:9000
+          AUDIO_PUBLIC_BASE_URL: http://127.0.0.1
+        run: docker compose -f deploy/docker-compose.yml config --quiet
+
+  containers:
+    name: Container images
+    needs: [flutter, python]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: backend-meta
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/bibleai-backend
+          tags: |
+            type=sha
+            type=raw,value=latest
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: true
+          tags: ${{ steps.backend-meta.outputs.tags }}
+          labels: ${{ steps.backend-meta.outputs.labels }}
+
+      - uses: docker/metadata-action@v5
+        id: worker-meta
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/bibleai-worker
+          tags: |
+            type=sha
+            type=raw,value=latest
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: worker/Dockerfile
+          push: true
+          tags: ${{ steps.worker-meta.outputs.tags }}
+          labels: ${{ steps.worker-meta.outputs.labels }}

@@ -1,0 +1,119 @@
+# Complete Bible AI backend: API + MongoDB + RustFS (S3) + Nginx.
+#
+# Start from the repository root:
+#   docker compose -f deploy/docker-compose.yml up -d --build
+#
+# Configuration is read from deploy/.env (the directory of this file).
+
+services:
+  # Shared storage for interpretations, sync data, and generation progress.
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand({ ping: 1 }).ok ? 0 : 2)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  # S3-compatible object storage for chapter MP3s.
+  rustfs:
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    command: ["/data"]
+    environment:
+      RUSTFS_ACCESS_KEY: ${AUDIO_S3_ACCESS_KEY:?set AUDIO_S3_ACCESS_KEY in deploy/.env}
+      RUSTFS_SECRET_KEY: ${AUDIO_S3_SECRET_KEY:?set AUDIO_S3_SECRET_KEY in deploy/.env}
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - rustfs-data:/data
+
+  # FastAPI. On startup it creates the audio bucket if needed, then serves.
+  api:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    image: bibleai-backend:local
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      rustfs:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      # Use the same database as the host-side worker. For a local-only stack,
+      # set MONGO_URI_DOCKER=mongodb://mongo:27017 in deploy/.env.
+      MONGO_URI: ${MONGO_URI_DOCKER:-${MONGO_URI}}
+      AUDIO_S3_ENDPOINT: http://rustfs:9000
+      BIBLEAI_DATA: /data
+    ports:
+      # Loopback only, for Flutter desktop and the Android emulator.
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - api-data:/data
+    command:
+      - sh
+      - -c
+      - |
+        for attempt in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+          if python /app/configure_rustfs.py; then
+            break
+          fi
+          echo "RustFS not ready yet..."
+          sleep 2
+        done
+        exec python -m uvicorn app:app --host 0.0.0.0 --port 8765
+
+  # One-off Python worker for TTS and interpretation generation.
+  worker:
+    build:
+      context: ..
+      dockerfile: worker/Dockerfile
+    image: bibleai-worker:local
+    profiles: ["tools"]
+    depends_on:
+      mongo:
+        condition: service_healthy
+      rustfs:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      MONGO_URI: ${MONGO_URI_DOCKER:-${MONGO_URI}}
+      AUDIO_S3_ENDPOINT: http://rustfs:9000
+      BIBLEAI_DATA: /data
+    volumes:
+      - api-data:/data
+    entrypoint: ["python"]
+    command: ["/app/worker/generate_kokoro_audio.py"]
+
+  # Public entry point: the API on / and recorded audio on /audio/.
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+      rustfs:
+        condition: service_started
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  mongo-data:
+  rustfs-data:
+  api-data:

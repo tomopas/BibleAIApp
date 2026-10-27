@@ -1,0 +1,25 @@
+# Build context for the backend and worker images. Keep generated data and venvs
+# out of the images.
+# and app build output out of the image.
+**/__pycache__
+**/venv
+**/.venv
+**/data
+**/*.db
+.git
+.gitignore
+.lh
+.dart_tool
+build
+lib
+assets
+test
+android
+ios
+linux
+macos
+web
+windows
+*.iml
+deploy/.env
+README.md
