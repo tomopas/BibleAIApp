@@ -55,6 +55,7 @@ __pycache__/
 data/
 backend/data/
 worker/data/
+exports/
 **/*.db
 **/*.sqlite
 **/*.sqlite3

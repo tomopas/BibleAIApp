@@ -295,6 +295,10 @@ object storage, a dataset host, or release assets. GitHub is suitable for the
 code and a small interpretation export, but not Git history for thousands of
 MP3 files.
 
+The source code is Apache-2.0 licensed in `LICENSE`. Generated interpretation
+and audio releases use the separate policy in `DATA_LICENSE.md`; review and
+update that policy for each translation, model, voice, and research setup.
+
 Export interpretations as a public, portable JSON file:
 
 ```bash
@@ -311,6 +315,9 @@ Publish `exports/interpretations.json` as a GitHub Release asset or on a
 dataset host such as Hugging Face Datasets. Include a `DATA_LICENSE.md` file
 stating the chosen data license, source translation, model and exact tag,
 prompt version, generation date, and any research-source policy.
+
+For a GitHub release, create a tag on the source commit, then upload the JSON
+export as a release asset. Do not commit the export to normal Git history.
 
 For audio, keep the generated MP3 files in RustFS/S3-compatible storage or a
 dataset/release host and publish a manifest containing each file's path,
