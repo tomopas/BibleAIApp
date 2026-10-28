@@ -1,13 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="bible_ai_app"
+        android:label="Bible AI"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
-        <!-- usesCleartextTraffic lets the app stream narration from a
-             self-hosted server over plain http:// on the church LAN. Remove it
-             once AUDIO_PUBLIC_BASE_URL and the API use https. -->
+        android:usesCleartextTraffic="${usesCleartextTraffic}">
+        <!-- usesCleartextTraffic is set per build type in
+             android/app/build.gradle.kts: debug/profile keep it for the
+             emulator and the church LAN, release is HTTPS-only unless built
+             with -PallowCleartext=true. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

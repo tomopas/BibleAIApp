@@ -15,7 +15,18 @@ class SettingsService {
     return SettingsService._(prefs);
   }
 
+  /// Baked in at build time so release APKs point at the hosted backend:
+  /// `flutter build apk --release --dart-define=API_BASE_URL=https://api.example.com`
+  ///
+  /// A URL saved in Settings still wins over this default.
+  static const String _apiBaseUrlFromEnvironment = String.fromEnvironment(
+    'API_BASE_URL',
+  );
+
   String get defaultServerUrl {
+    if (_apiBaseUrlFromEnvironment.isNotEmpty) {
+      return _apiBaseUrlFromEnvironment;
+    }
     if (Platform.isAndroid) return 'http://10.0.2.2:8765';
     return 'http://127.0.0.1:8765';
   }

@@ -1,0 +1,142 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build & Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate tag version against pubspec.yaml
+        run: |
+          pubspec_version=$(grep -m1 '^version:' pubspec.yaml | sed -E 's/version:[[:space:]]*//' | cut -d'+' -f1)
+          tag_name="${GITHUB_REF_NAME}"
+          tag_version="${tag_name#v}"
+          echo "Pubspec version: ${pubspec_version}"
+          echo "Tag version:     ${tag_version}"
+          if [ "${pubspec_version}" != "${tag_version}" ]; then
+            echo "::error::Tag '${tag_name}' does not match pubspec version '${pubspec_version}'. Update pubspec.yaml version (and +buildNumber) before tagging."
+            exit 1
+          fi
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.0'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify static analysis & unit tests
+        run: |
+          flutter analyze
+          flutter test
+
+      - name: Configure release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::Missing one or more required release signing secrets (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD). See docs/RELEASE.md for setup instructions."
+            exit 1
+          fi
+
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+
+          cat <<EOF > android/key.properties
+          storeFile=upload-keystore.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
+      - name: Build Android App Bundle (.aab)
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          DEFINE_ARGS=""
+          if [ -n "$API_BASE_URL" ]; then
+            echo "Building with API_BASE_URL=$API_BASE_URL"
+            DEFINE_ARGS="--dart-define=API_BASE_URL=$API_BASE_URL"
+          fi
+          flutter build appbundle --release $DEFINE_ARGS
+
+      - name: Build Split Release APKs (.apk)
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          DEFINE_ARGS=""
+          if [ -n "$API_BASE_URL" ]; then
+            DEFINE_ARGS="--dart-define=API_BASE_URL=$API_BASE_URL"
+          fi
+          flutter build apk --release --split-per-abi $DEFINE_ARGS
+
+      - name: Prepare release distribution assets
+        run: |
+          mkdir -p dist
+          tag_name="${GITHUB_REF_NAME}"
+
+          # Copy and rename App Bundle for Google Play
+          cp build/app/outputs/bundle/release/app-release.aab "dist/BibleAI-${tag_name}.aab"
+
+          # Copy and rename split APKs
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "dist/BibleAI-${tag_name}-arm64-v8a.apk"
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "dist/BibleAI-${tag_name}-armeabi-v7a.apk"
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk "dist/BibleAI-${tag_name}-x86_64.apk"
+
+          # Generate checksums
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          cd ..
+
+      - name: Upload build artifacts to GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: bible-ai-release-${{ github.ref_name }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          body: |
+            ### Bible AI ${{ github.ref_name }}
+
+            #### Download Options:
+            - **ARM64 (Most modern Android phones)**: `BibleAI-${{ github.ref_name }}-arm64-v8a.apk`
+            - **ARM32 (Older Android devices)**: `BibleAI-${{ github.ref_name }}-armeabi-v7a.apk`
+            - **x86_64 (Emulators & ChromeOS)**: `BibleAI-${{ github.ref_name }}-x86_64.apk`
+            - **Google Play Store upload package**: `BibleAI-${{ github.ref_name }}.aab`
+
+            Verify downloads with `SHA256SUMS.txt`.

@@ -380,6 +380,8 @@ flutter test
 flutter run
 ```
 
+For building release APKs, app bundles, and configuring automated GitHub Actions release publishing, see the [Android Release Guide](docs/RELEASE.md).
+
 ### Test generated interpretations and audio
 
 First verify that the backend can see the generated data:

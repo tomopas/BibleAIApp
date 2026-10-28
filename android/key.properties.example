@@ -1,0 +1,13 @@
+# Copy to android/key.properties (same directory, without ".example") and fill
+# in the values produced by scripts/new-upload-keystore.ps1.
+#
+# android/key.properties is gitignored. Never commit it: it contains the
+# password for your upload key. The keystore itself (upload-keystore.jks) is
+# gitignored too.
+#
+# Release builds fall back to the debug key when this file is missing, so local
+# builds keep working - just never publish those artifacts.
+storeFile=upload-keystore.jks
+storePassword=change-me
+keyAlias=upload
+keyPassword=change-me

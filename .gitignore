@@ -71,6 +71,7 @@ deploy/.env
 *.key
 *.keystore
 *.jks
+android/key.properties
 
 # Copilot CLI local history can contain secrets
 .lh/
