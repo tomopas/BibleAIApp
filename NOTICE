@@ -1,0 +1,14 @@
+BibleAIApp
+Copyright 2026 Tomopas
+
+This product includes software developed as part of the BibleAIApp project
+(https://github.com/tomopas/BibleAIApp).
+
+The Apache License 2.0 in LICENSE covers the BibleAIApp source code. It does
+not automatically apply to Bible translations, model weights, generated
+datasets or generated audio, fonts, voices, or third-party dependencies.
+
+Data and media released separately from the source code are covered by
+DATA_LICENSE.md. Third-party components keep their own licenses:
+the bundled Lora font is under the SIL Open Font License
+(assets/fonts/OFL.txt), and Kokoro-82M model weights are Apache-2.0.

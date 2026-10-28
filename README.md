@@ -446,11 +446,24 @@ Never put these credentials in the Flutter app or commit `deploy/.env`.
 
 ## Licensing
 
-Check each translation's license before distributing it. Bundled KJV content
-is public domain. Kokoro-82M weights are Apache-2.0, but translation rights
-and exact voice/dependency terms must still be checked before publishing
-generated audio.
+The application source code is licensed under the **Apache License 2.0**
+(see [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE)). Generated interpretation
+text and audio that is published separately is covered by
+[`DATA_LICENSE.md`](DATA_LICENSE.md) (CC BY 4.0).
+
+Third-party material keeps its own terms:
+
+- Bundled KJV text is public domain.
+- The bundled Lora font is under the SIL Open Font License
+  (`assets/fonts/OFL.txt`).
+- Kokoro-82M weights are Apache-2.0, but translation rights and exact
+  voice/dependency terms must still be checked before publishing generated
+  audio.
+- Translations downloaded at runtime from
+  `scrollmapper/bible_databases` keep their upstream licenses; check each
+  translation before redistributing it.
 
 Whisper is a speech-to-text model and is not part of the current narration
 pipeline. Generated interpretations are model output and should be reviewed
 before publication or theological use.
+
