@@ -20,7 +20,6 @@ migrate_working_dir/
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
 #.vscode/
 
 # Flutter/Dart/Pub related
@@ -51,11 +50,15 @@ venv/
 **/.venv/
 __pycache__/
 
-# Runtime data: translation cache, databases, checkpoints, and generated audio
-data/
+# Runtime data: translation cache, databases, checkpoints, and generated audio.
+# These are produced locally (see README) and must never be committed.
+# NOTE: the app sources in lib/ and the bundled assets in assets/ are tracked
+# on purpose - do not ignore those directories.
+/data/
 backend/data/
 worker/data/
-exports/
+server/data/
+/exports/
 **/*.db
 **/*.sqlite
 **/*.sqlite3
@@ -66,6 +69,8 @@ deploy/.env
 .env.local
 *.pem
 *.key
+*.keystore
+*.jks
 
 # Copilot CLI local history can contain secrets
 .lh/

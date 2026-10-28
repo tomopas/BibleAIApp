@@ -1,11 +1,12 @@
-gradle-wrapper.jar
 /.gradle
 /captures/
-/gradlew
-/gradlew.bat
 /local.properties
 GeneratedPluginRegistrant.java
 .cxx/
+/.kotlin/
+
+# The Gradle wrapper (gradlew, gradlew.bat, gradle/wrapper/*) is committed on
+# purpose so CI and fresh clones can build without regenerating it.
 
 # Remember to never publicly share your keystore.
 # See https://flutter.dev/to/reference-keystore
