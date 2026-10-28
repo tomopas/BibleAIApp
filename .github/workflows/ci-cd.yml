@@ -51,6 +51,9 @@ jobs:
         run: |
           python -m compileall -q backend worker tools
 
+      - name: Create a local deployment env for validation
+        run: cp deploy/.env.example deploy/.env
+
       - name: Validate Docker Compose configuration
         env:
           MONGO_URI: mongodb://127.0.0.1:27017
