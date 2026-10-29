@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: bibleai-api
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: MONGO_DB
+        value: bibleai
+      - key: BIBLEAI_LIVE_GENERATION
+        value: "0"
+      - key: AUDIO_PUBLIC_BASE_URL
+        value: https://huggingface.co/datasets/Tomopas/bibleai-audio/resolve/main
+      - key: AUDIO_CDN_ALWAYS_AVAILABLE
+        value: "1"
+      - key: BIBLE_AI_CORS_ORIGINS
+        value: "*"

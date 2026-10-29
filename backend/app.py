@@ -134,6 +134,9 @@ def _audio_available(translation_id: str, book: str, chapter: int) -> tuple[bool
                     uploaded = False
             if uploaded is not None:
                 available, size = uploaded, uploaded_size
+        else:
+            if _env_flag("AUDIO_CDN_ALWAYS_AVAILABLE", True):
+                available = True
 
     with _audio_probe_lock:
         _audio_probe_cache[key] = (now, available, size)

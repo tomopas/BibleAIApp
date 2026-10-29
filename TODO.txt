@@ -1,1 +1,2 @@
-fix bug, that interpretations work on my s22 physical but not on my android studio emulator (the server audio seems to work on both)
+- fix bug, that interpretations work on my s22 physical but not on my android studio emulator (the server audio seems to work on both)
+- website version of the app
