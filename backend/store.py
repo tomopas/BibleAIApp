@@ -371,4 +371,7 @@ def make_store() -> BaseStore:
             print(f"[storage] MongoDB unavailable ({exc}); falling back to SQLite")
             if mode == "mongo":
                 raise
+            fallback = SQLiteStore()
+            fallback.connection_error = str(exc)
+            return fallback
     return SQLiteStore()

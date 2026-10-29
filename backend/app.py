@@ -365,7 +365,7 @@ Ollama: {ollama_status}</p>
 @app.get("/api/health")
 def health() -> dict[str, Any]:
     models = list_models() if LIVE_GENERATION else []
-    return {
+    data = {
         "status": "ok",
         "time": utc_now(),
         "storage": store.backend,
@@ -379,6 +379,9 @@ def health() -> dict[str, Any]:
         "catalogSize": len(catalog()),
         "expectedChapters": EXPECTED_CHAPTERS,
     }
+    if getattr(store, "connection_error", None):
+        data["storageError"] = getattr(store, "connection_error")
+    return data
 
 
 @app.get("/api/catalog")
