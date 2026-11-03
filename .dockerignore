@@ -5,6 +5,7 @@
 **/venv
 **/.venv
 **/data
+!assets/data
 **/*.db
 .git
 .gitignore
@@ -12,9 +13,6 @@
 .dart_tool
 build
 lib
-assets/*
-!assets/bibles
-!assets/bibles/en-kjv.json.gz
 test
 android
 ios

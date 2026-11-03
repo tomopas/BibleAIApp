@@ -17,8 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ /app/backend/
 COPY tools/ /app/tools/
 COPY shared/ /app/shared/
-COPY exports/ /app/exports/
-COPY assets/bibles/ /app/assets/bibles/
+COPY assets/ /app/assets/
 COPY backend/configure_rustfs.py /app/configure_rustfs.py
 
 RUN mkdir -p /data
