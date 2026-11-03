@@ -103,6 +103,11 @@ class HomePage extends StatelessWidget {
         children: [
           Row(
             children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset('assets/icon/app_icon.png', width: 36, height: 36),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   'Bible AI',
