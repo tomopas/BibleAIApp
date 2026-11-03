@@ -196,6 +196,20 @@ def ensure_bundle(translation_id: str, refresh: bool = False) -> dict[str, Any]:
             cached = load_cached(translation_id)
             if cached and cached.get("cacheVersion") == CACHE_VERSION:
                 return cached
+        bundled_gz = ROOT / "assets" / "bibles" / f"{translation_id}.json.gz"
+        if bundled_gz.exists() and not refresh:
+            try:
+                import gzip
+                with gzip.open(bundled_gz, "rt", encoding="utf-8") as gz_fh:
+                    payload = json.load(gz_fh)
+                payload["cacheVersion"] = CACHE_VERSION
+                tmp = path.with_suffix(".tmp")
+                with open(tmp, "w", encoding="utf-8") as fh:
+                    json.dump(payload, fh, ensure_ascii=False, separators=(",", ":"))
+                tmp.replace(path)
+                return payload
+            except Exception as err:
+                print(f"[translations] could not unpack bundled {translation_id}: {err}")
         source_name = entry["sourceFile"]
         url = f"{RAW_BASE}/{urllib.parse.quote(source_name)}.json"
         with httpx.Client(timeout=180, follow_redirects=True) as client:
@@ -222,8 +236,8 @@ def ensure_bundle(translation_id: str, refresh: bool = False) -> dict[str, Any]:
         return payload
 
 
-def chapter_text(translation_id: str, book_id: str, chapter: int) -> tuple[str, int, str]:
-    """Return (text, verse_count, book_name). Raises KeyError/IndexError."""
+def chapter_data(translation_id: str, book_id: str, chapter: int) -> dict[str, Any]:
+    """Return dictionary with structured verses, plain text, count, and book name."""
     bundle = ensure_bundle(translation_id)
     for book in bundle["books"]:
         if book["id"] != book_id:
@@ -231,10 +245,56 @@ def chapter_text(translation_id: str, book_id: str, chapter: int) -> tuple[str, 
         index = int(chapter) - 1
         if index < 0 or index >= len(book["chapters"]):
             raise IndexError(f"{book_id} has no chapter {chapter}")
-        verses = book["chapters"][index]
-        lines = [f"{i + 1}. {text}" for i, text in enumerate(verses) if text]
-        return "\n".join(lines), len(verses), book["name"]
+        verses_raw = book["chapters"][index]
+        structured = [{"verse": i + 1, "text": text} for i, text in enumerate(verses_raw)]
+        lines = [f"{v['verse']}. {v['text']}" for v in structured if v['text']]
+        return {
+            "book": book_id,
+            "name": book["name"],
+            "chapter": int(chapter),
+            "verseCount": len(verses_raw),
+            "text": "\n".join(lines),
+            "verses": structured,
+        }
     raise KeyError(f"Book not found: {book_id}")
+
+
+def chapter_text(translation_id: str, book_id: str, chapter: int) -> tuple[str, int, str]:
+    """Return (text, verse_count, book_name). Raises KeyError/IndexError."""
+    data = chapter_data(translation_id, book_id, chapter)
+    return data["text"], data["verseCount"], data["name"]
+
+
+def search_translation(
+    translation_id: str = "en-kjv",
+    query: str = "",
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    """Search for query string across all verses in the translation."""
+    q = query.strip().lower()
+    if not q:
+        return []
+    bundle = ensure_bundle(translation_id)
+    results = []
+    for book in bundle["books"]:
+        book_id = book["id"]
+        book_name = book["name"]
+        for c_idx, ch_verses in enumerate(book["chapters"]):
+            chapter_num = c_idx + 1
+            for v_idx, verse_text in enumerate(ch_verses):
+                if not verse_text:
+                    continue
+                if q in verse_text.lower():
+                    results.append({
+                        "book": book_id,
+                        "bookName": book_name,
+                        "chapter": chapter_num,
+                        "verse": v_idx + 1,
+                        "text": verse_text,
+                    })
+                    if len(results) >= limit:
+                        return results
+    return results
 
 
 def book_chapter_counts(translation_id: str = "en-kjv") -> dict[str, int]:

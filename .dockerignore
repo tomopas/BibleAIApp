@@ -12,7 +12,9 @@
 .dart_tool
 build
 lib
-assets
+assets/*
+!assets/bibles
+!assets/bibles/en-kjv.json.gz
 test
 android
 ios

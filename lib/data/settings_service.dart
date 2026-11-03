@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/canonical_books.dart';
@@ -27,6 +28,7 @@ class SettingsService {
     if (_apiBaseUrlFromEnvironment.isNotEmpty) {
       return _apiBaseUrlFromEnvironment;
     }
+    if (kIsWeb) return Uri.base.origin;
     if (Platform.isAndroid) return 'http://10.0.2.2:8765';
     return 'http://127.0.0.1:8765';
   }

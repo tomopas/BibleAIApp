@@ -20,7 +20,8 @@ Designed for believers, students, and churches, Bible AI can be run **100% free 
 - 🎙️ **Full Audio Narration**: 1,189 chapter-by-chapter narrations generated with [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0). Streamed at high speed via Hugging Face's global CDN or played through on-device TTS.
 - ☁️ **100% Free Cloud Architecture**: Zero credit card required. Hosted on Render (FastAPI), MongoDB Atlas (M0 Shared), and Hugging Face Datasets (Git LFS CDN).
 - 🏛️ **Church & Local LAN Ready**: Full Docker Compose stack (`api`, `mongo`, `rustfs` S3, `nginx`) for air-gapped church networks or personal servers.
-- 📱 **Cross-Platform**: Android release APKs and App Bundle (Google Play ready), with Windows desktop support.
+- 🌐 **Full Web App (PWA)**: Responsive website version served directly at `/` with Scripture reader, comparative study perspectives, Kokoro-82M audio player, full-text search, reading plans, notes/highlights, and cloud sync.
+- 📱 **Cross-Platform**: Web browser (desktop & mobile), Android release APKs and App Bundle (Google Play ready), and Windows desktop support.
 
 ---
 
@@ -71,9 +72,10 @@ The complete 66-book audio dataset (1,189 MP3s, ~2.14 GB) is published on Huggin
 
 | Component | Technology | Free Host / Runtime | Credit Card Needed? |
 |---|---|---|---|
-| **Mobile App** | Flutter 3.44 / Dart 3.12 | [GitHub Releases](https://github.com/tomopas/BibleAIApp/releases) | No |
+| **Web App (PWA)** | HTML5 / CSS3 / JS (Served by FastAPI) | [Render Free Web Service](https://render.com) | No |
+| **Mobile & Desktop App** | Flutter 3.44 / Dart 3.12 | [GitHub Releases](https://github.com/tomopas/BibleAIApp/releases) | No |
 | **Backend API** | FastAPI / Python 3.12 | [Render Free Web Service](https://render.com) | No |
-| **Database** | MongoDB 7 | [MongoDB Atlas (M0 Free)](https://www.mongodb.com/cloud/atlas) | No |
+| **Database** | MongoDB 7 (with auto-seeded SQLite fallback) | [MongoDB Atlas (M0 Free)](https://www.mongodb.com/cloud/atlas) | No |
 | **Audio Storage** | Kokoro-82M MP3s (~2.1 GB) | [Hugging Face Datasets](https://huggingface.co/datasets/Tomopas/bibleai-audio) | No |
 | **Worker (TTS/LLM)** | PyTorch, Kokoro, Ollama | Local PC / NVIDIA RTX GPU | No |
 
@@ -84,15 +86,17 @@ The complete 66-book audio dataset (1,189 MP3s, ~2.14 GB) is published on Huggin
 ```text
 ├── android/                 # Android native project and Gradle build configs
 ├── assets/                  # Bundled KJV text, fonts, and catalog fallback
-├── backend/                 # FastAPI REST API application
+├── backend/                 # FastAPI REST API & Web App server
+│   ├── static/              # Responsive Web App (PWA: index.html, styles.css, app.js, sw.js)
 │   ├── ai.py                # Ollama client and study perspective templates
-│   ├── app.py               # Main API routes (health, catalog, audio, sync)
-│   ├── store.py             # Storage layer (MongoDB with SQLite fallback)
-│   ├── Dockerfile           # Backend container definition
+│   ├── app.py               # Main web & API routes (reader, search, catalog, audio, sync)
+│   ├── store.py             # Storage layer (MongoDB with auto-seeded SQLite fallback)
+│   ├── translations.py      # Translation catalogue, chapter loader, and full-text search
+│   ├── Dockerfile           # Backend & Web App container definition
 │   └── requirements.txt     # Python API dependencies
 ├── deploy/                  # Self-hosted Docker Compose stack (Mongo, RustFS, Nginx)
 ├── docs/                    # Documentation, screenshots, audio samples, and release guides
-├── exports/                 # Portable JSON exports of interpretations
+├── exports/                 # Portable JSON exports of interpretations (4,756 study notes)
 ├── lib/                     # Flutter cross-platform source code
 │   ├── data/                # Database helpers, audio service, API client
 │   ├── state/               # Application state management (Provider)
@@ -193,14 +197,34 @@ If you prefer complete data sovereignty, want to run offline, or serve a local c
    ```
 
 The local stack includes:
-- **FastAPI**: REST API on port 80 (via Nginx reverse proxy).
-- **MongoDB**: Storage for study notes and sync.
+- **FastAPI & Web App**: Bible AI Website (PWA) and REST API on port 80 (via Nginx reverse proxy).
+- **MongoDB**: Storage for study notes and sync (with automatic SQLite fallback seeded from `exports/interpretations.json`).
 - **RustFS (S3)**: High-speed local S3-compatible audio storage on port 9000.
 - **Nginx**: Static audio streaming and SSL termination.
 
 ---
 
-## 3. Flutter App
+## 3. Website Version (Web App & PWA)
+
+Bible AI includes a full-featured, responsive Single-Page Web Application served directly by the FastAPI backend at `/` (`backend/static/`):
+
+- **Scripture Reader**: Browse all 66 canonical books (OT & NT) with chapter grid navigation, multiple translations (`KJV`, `ASV`, `BSB`, `WEB`, etc.), and 4-color verse highlighting, bookmarks, and personal study notes.
+- **Comparative Study Perspectives**: Side-by-side or slide-over drawer displaying theological and scholarly notes (*Protestant/Reformed*, *Catholic*, *Orthodox*, *Historical-Critical*, *Evangelical*, *Jewish*, etc.).
+- **Audio Narration Player**: Streams Kokoro-82M chapter MP3s from the server or Hugging Face CDN with variable speed (`0.75x`–`2.0x`), seek bar, auto-advance to next chapter, and browser TTS fallback.
+- **Full-Text Search & Quick Jump**: Instant search (`Ctrl+K`) across all 31,102 verses via `/api/search` or direct reference jumping (`John 3:16`, `Ps 23`, `Rom 8:28`).
+- **Reading Plans & Cloud Sync**: 5 interactive reading plans (*Bible in a Year*, *New Testament in 90 Days*, *Four Gospels in 60 Days*, *Psalms in 30 Days*, *Proverbs in 31 Days*), 4 reading themes (*Parchment*, *Sepia*, *Midnight*, *Obsidian*), JSON backup export/import, and two-way sync via `/api/sync`.
+
+### Run the Website Locally
+```bash
+cd backend
+pip install -r requirements.txt
+python -m uvicorn app:app --host 0.0.0.0 --port 8765 --reload
+```
+Open **`http://127.0.0.1:8765/`** in any desktop or mobile browser. (Raw API diagnostics remain available at `/api/status` and OpenAPI docs at `/docs`).
+
+---
+
+## 4. Flutter App (Android & Desktop)
 
 ### Download Release Binaries
 Pre-built installable APKs are available on the [Releases](https://github.com/tomopas/BibleAIApp/releases) page:
@@ -240,7 +264,7 @@ For complete instructions on generating release keys, signing configurations, an
 
 ---
 
-## 4. Python Worker (Data Generation)
+## 5. Python Worker (Data Generation)
 
 The Python worker is decoupled from the backend and is used for long-running batch generation jobs.
 

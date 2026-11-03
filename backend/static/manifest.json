@@ -1,0 +1,16 @@
+{
+  "name": "Bible AI — Scripture Reader & Study Perspectives",
+  "short_name": "Bible AI",
+  "description": "Offline-first Bible reader with comparative theological perspectives, Kokoro-82M chapter audio narration, reading plans, and sync.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF6EE",
+  "theme_color": "#8C3B2E",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

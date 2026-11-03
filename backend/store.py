@@ -126,6 +126,49 @@ class SQLiteStore(BaseStore):
             if "research_json" not in columns:
                 conn.execute("ALTER TABLE interpretations ADD COLUMN research_json TEXT NOT NULL DEFAULT '[]'")
 
+            cur = conn.execute("SELECT COUNT(*) FROM interpretations")
+            total = cur.fetchone()[0]
+            if total == 0:
+                export_file = ROOT.parent / "exports" / "interpretations.json"
+                fallback_file = ROOT.parent / "assets" / "data" / "sample_interpretations.json"
+                target = export_file if export_file.exists() else (fallback_file if fallback_file.exists() else None)
+                if target:
+                    try:
+                        with open(target, encoding="utf-8") as fh:
+                            items = json.load(fh)
+                        rows = []
+                        for r in items:
+                            r_id = r.get("id") or f"{r['book']}:{r['chapter']}:{r.get('verse_start', 1)}:{r.get('verse_end', 999)}:{r['perspective']}"
+                            rows.append((
+                                r_id,
+                                r["book"],
+                                int(r["chapter"]),
+                                int(r.get("verse_start", 1)),
+                                int(r.get("verse_end", 999)),
+                                r["perspective"],
+                                r.get("label", r["perspective"]),
+                                r["content"],
+                                r.get("model", ""),
+                                r.get("scope", "chapter"),
+                                r.get("source", ""),
+                                int(r.get("sample", 0)),
+                                int(r.get("tokens", 0)),
+                                int(r.get("duration_ms", 0)),
+                                json.dumps(r.get("research", []), ensure_ascii=False),
+                                r.get("created_at", utc_now()),
+                            ))
+                        conn.executemany(
+                            """
+                            INSERT OR IGNORE INTO interpretations
+                                (id, book, chapter, verse_start, verse_end, perspective, label, content,
+                                 model, scope, source, sample, tokens, duration_ms, research_json, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            rows,
+                        )
+                    except Exception as err:
+                        print(f"[store] could not seed interpretations: {err}")
+
     def save_interpretation(self, row: dict[str, Any]) -> None:
         row = dict(row)
         row.setdefault("created_at", utc_now())
@@ -307,13 +350,12 @@ class MongoStore(BaseStore):
                 ]
             )
         }
-        chapters = len(
-            list(
-                self.interp.aggregate(
-                    [{"$group": {"_id": {"book": "$book", "chapter": "$chapter"}}}, {"$count": "n"}]
-                )
+        chapters_agg = list(
+            self.interp.aggregate(
+                [{"$group": {"_id": {"book": "$book", "chapter": "$chapter"}}}, {"$count": "n"}]
             )
         )
+        chapters = int(chapters_agg[0]["n"]) if chapters_agg else 0
         return {
             "total_interpretations": total,
             "chapters_covered": chapters,

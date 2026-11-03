@@ -25,10 +25,13 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
 load_dotenv(ROOT / "deploy" / ".env")
 
 from ai import CORE, PERSPECTIVES, PERSPECTIVE_BY_ID, generate_notes, list_models, resolve_model
@@ -39,9 +42,11 @@ from translations import (
     book_chapter_counts,
     bundle_path,
     catalog,
+    chapter_data,
     chapter_text,
     ensure_bundle,
     get_entry,
+    search_translation,
 )
 
 AUDIO_DIR = DATA_DIR / "audio"
@@ -146,7 +151,7 @@ app = FastAPI(title="Bible AI API", version="1.0.0")
 app.add_middleware(GZipMiddleware, minimum_size=1200)
 _cors_origins = [
     origin.strip()
-    for origin in os.environ.get("BIBLE_AI_CORS_ORIGINS", "http://localhost,http://127.0.0.1").split(",")
+    for origin in os.environ.get("BIBLE_AI_CORS_ORIGINS", "*").split(",")
     if origin.strip()
 ]
 app.add_middleware(
@@ -155,6 +160,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 store = make_store()
 JOBS: dict[str, dict[str, Any]] = {}
@@ -330,8 +336,7 @@ def _run_generation(job_id: str, req: GenerateRequest) -> None:
             pass
 
 
-@app.get("/", response_class=HTMLResponse)
-def index() -> str:
+def _api_status_html() -> str:
     coverage = store.coverage()
     ollama = list_models() if LIVE_GENERATION else []
     if not LIVE_GENERATION:
@@ -353,6 +358,7 @@ Ollama: {ollama_status}</p>
 {coverage.get('chapters_covered', 0):,} chapters.</p>
 <h3>Endpoints</h3>
 <ul>
+<li><a href="/">/</a> — Bible AI Web App</li>
 <li><a href="/docs">/docs</a> — interactive OpenAPI docs</li>
 <li><a href="/api/health">/api/health</a></li>
 <li><a href="/api/catalog">/api/catalog</a></li>
@@ -362,9 +368,49 @@ Ollama: {ollama_status}</p>
 </body></html>"""
 
 
+@app.get("/", response_model=None)
+def index() -> FileResponse | HTMLResponse:
+    index_file = STATIC_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file, media_type="text/html")
+    return HTMLResponse(_api_status_html())
+
+
+@app.get("/api", response_class=HTMLResponse)
+@app.get("/api/status", response_class=HTMLResponse)
+def api_status() -> str:
+    return _api_status_html()
+
+
+@app.get("/manifest.json")
+def web_manifest() -> FileResponse:
+    path = STATIC_DIR / "manifest.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse(path, media_type="application/manifest+json")
+
+
+@app.get("/sw.js")
+def web_sw() -> FileResponse:
+    path = STATIC_DIR / "sw.js"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse(path, media_type="application/javascript")
+
+
+@app.get("/favicon.png")
+@app.get("/favicon.ico")
+def web_favicon() -> FileResponse:
+    for candidate in [STATIC_DIR / "favicon.png", ROOT / "web" / "favicon.png"]:
+        if candidate.exists():
+            return FileResponse(candidate, media_type="image/png")
+    raise HTTPException(status_code=404, detail="Not found")
+
+
 @app.get("/api/health")
 def health() -> dict[str, Any]:
     models = list_models() if LIVE_GENERATION else []
+    cov = store.coverage()
     data = {
         "status": "ok",
         "time": utc_now(),
@@ -375,7 +421,9 @@ def health() -> dict[str, Any]:
             "online": bool(models),
             "models": models,
         },
-        "interpretations": store.coverage().get("total_interpretations", 0),
+        "interpretations": cov.get("total_interpretations", 0),
+        "chaptersCovered": cov.get("chapters_covered", 0),
+        "coverage": cov,
         "catalogSize": len(catalog()),
         "expectedChapters": EXPECTED_CHAPTERS,
     }
@@ -635,10 +683,27 @@ def books(translation_id: str) -> dict[str, Any]:
 @app.get("/api/chapter/{translation_id}/{book}/{chapter}")
 def chapter(translation_id: str, book: str, chapter: int) -> dict[str, Any]:
     try:
-        text, count, name = chapter_text(translation_id, book, chapter)
+        return chapter_data(translation_id, book, chapter)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    return {"book": book, "name": name, "chapter": chapter, "verseCount": count, "text": text}
+
+
+@app.get("/api/search")
+def search_bible(
+    q: str = Query(..., min_length=2),
+    translation_id: str = "en-kjv",
+    limit: int = Query(50, ge=1, le=200),
+) -> dict[str, Any]:
+    try:
+        matches = search_translation(translation_id=translation_id, query=q, limit=limit)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {
+        "query": q,
+        "translation": translation_id,
+        "count": len(matches),
+        "results": matches,
+    }
 
 
 @app.on_event("shutdown")
