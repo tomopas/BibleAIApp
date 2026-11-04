@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import 'core/branding.dart';
 import 'core/theme.dart';
 import 'data/api_client.dart';
 import 'data/app_database.dart';
@@ -13,6 +15,7 @@ import 'state/app_state.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await BrandingConfig.load();
   final database = await AppDatabase.open();
   final settings = await SettingsService.load();
   final state = AppState(
@@ -32,7 +35,7 @@ class BibleAiApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     return MaterialApp(
-      title: 'Bible AI',
+      title: state.branding.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.build(state.themeMode, state.settings.themeStyle),
       home: const AppShell(),
@@ -105,13 +108,36 @@ class HomePage extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset('assets/icon/app_icon.png', width: 36, height: 36),
+                child: Image.asset(
+                  state.branding.logoAsset,
+                  width: 36,
+                  height: 36,
+                  errorBuilder: (_, _, _) => Image.asset(
+                    'assets/icon/app_icon.png',
+                    width: 36,
+                    height: 36,
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  'Bible AI',
-                  style: Theme.of(context).textTheme.headlineMedium,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      state.branding.appName,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    if (state.branding.organizationName.isNotEmpty)
+                      Text(
+                        state.branding.organizationName,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                  ],
                 ),
               ),
               IconButton(
@@ -129,18 +155,124 @@ class HomePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Welcome to Bible AI',
+                      state.branding.welcomeTitle,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      'Read offline, save your own study notes, and explore interpretations from several traditions.',
+                    Text(
+                      state.branding.welcomeMessage,
                     ),
                     const SizedBox(height: 12),
                     FilledButton(
                       onPressed: state.completeOnboarding,
                       child: const Text('Get started'),
                     ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          if (state.branding.hasChurchInfo) ...[
+            const SizedBox(height: 14),
+            Card(
+              elevation: 0,
+              color: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest
+                  .withValues(alpha: 0.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .outlineVariant
+                      .withValues(alpha: 0.5),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (state.branding.hasBanner) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          state.branding.bannerAsset,
+                          width: double.infinity,
+                          height: 130,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.church_outlined,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            state.branding.organizationName.isNotEmpty
+                                ? state.branding.organizationName
+                                : state.branding.appName,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (state.branding.tagline.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        state.branding.tagline,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontStyle: FontStyle.italic,
+                            ),
+                      ),
+                    ],
+                    if (state.branding.churchServiceInfo.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.schedule,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              state.branding.churchServiceInfo,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (state.branding.websiteUrl.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.open_in_new, size: 16),
+                        label: const Text('Visit Church Website'),
+                        onPressed: () {
+                          final uri = Uri.tryParse(state.branding.websiteUrl);
+                          if (uri != null) {
+                            launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        },
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -1359,6 +1491,77 @@ class SettingsPage extends StatelessWidget {
               icon: const Icon(Icons.refresh),
             ),
           ),
+          const Divider(height: 32),
+          Text(
+            state.branding.hasChurchInfo
+                ? 'About & Church Information'
+                : 'About',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 12),
+          ListTile(
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                state.branding.logoAsset,
+                width: 40,
+                height: 40,
+                errorBuilder: (_, _, _) => Image.asset(
+                  'assets/icon/app_icon.png',
+                  width: 40,
+                  height: 40,
+                ),
+              ),
+            ),
+            title: Text(state.branding.appName),
+            subtitle: Text(
+              state.branding.organizationName.isNotEmpty
+                  ? '${state.branding.organizationName} • v1.0.2'
+                  : 'v1.0.2 • Offline Scripture & AI Study',
+            ),
+          ),
+          if (state.branding.tagline.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text(
+                state.branding.tagline,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                    ),
+              ),
+            ),
+          if (state.branding.churchServiceInfo.isNotEmpty)
+            ListTile(
+              leading: const Icon(Icons.schedule),
+              title: const Text('Services & Location'),
+              subtitle: Text(state.branding.churchServiceInfo),
+            ),
+          if (state.branding.websiteUrl.isNotEmpty)
+            ListTile(
+              leading: const Icon(Icons.language),
+              title: const Text('Website'),
+              subtitle: Text(state.branding.websiteUrl),
+              trailing: const Icon(Icons.open_in_new, size: 18),
+              onTap: () {
+                final uri = Uri.tryParse(state.branding.websiteUrl);
+                if (uri != null) {
+                  launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+            ),
+          if (state.branding.contactEmail.isNotEmpty)
+            ListTile(
+              leading: const Icon(Icons.email_outlined),
+              title: const Text('Contact'),
+              subtitle: Text(state.branding.contactEmail),
+              trailing: const Icon(Icons.send, size: 18),
+              onTap: () {
+                final uri = Uri.tryParse('mailto:${state.branding.contactEmail}');
+                if (uri != null) {
+                  launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+            ),
         ],
       ),
     );

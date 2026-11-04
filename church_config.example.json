@@ -1,0 +1,13 @@
+{
+  "appName": "Grace Bible",
+  "shortName": "Grace Bible",
+  "tagline": "Rooted in Faith, Growing in Grace",
+  "organizationName": "Grace Community Church",
+  "welcomeTitle": "Welcome to Grace Bible",
+  "welcomeMessage": "Welcome to our church study app. Read scripture offline, explore study perspectives, and grow in God's Word together.",
+  "websiteUrl": "https://gracechurch.example.com",
+  "contactEmail": "office@gracechurch.example.com",
+  "churchServiceInfo": "Sundays 10:00 AM • Main Sanctuary & Online",
+  "iconPath": "",
+  "bannerPath": ""
+}

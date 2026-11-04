@@ -407,6 +407,29 @@ def web_favicon() -> FileResponse:
     raise HTTPException(status_code=404, detail="Not found")
 
 
+@app.get("/api/branding")
+def get_branding() -> dict[str, Any]:
+    branding_file = ROOT / "assets" / "branding.json"
+    if branding_file.exists():
+        try:
+            return json.loads(branding_file.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {
+        "appName": "Bible AI",
+        "shortName": "Bible AI",
+        "tagline": "Offline-first Bible reader with AI study perspectives and audio",
+        "organizationName": "",
+        "welcomeTitle": "Welcome to Bible AI",
+        "welcomeMessage": "Read offline, save your own study notes, and explore interpretations from several traditions.",
+        "websiteUrl": "",
+        "contactEmail": "",
+        "churchServiceInfo": "",
+        "logoAsset": "assets/icon/app_icon.png",
+        "bannerAsset": "",
+    }
+
+
 @app.get("/api/health")
 def health() -> dict[str, Any]:
     models = list_models() if LIVE_GENERATION else []

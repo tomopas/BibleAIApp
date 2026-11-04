@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/branding.dart';
 import '../data/api_client.dart';
 import '../data/app_database.dart';
 import '../data/audio_service.dart';
@@ -48,6 +49,7 @@ class AppState extends ChangeNotifier {
   String? generationError;
 
   ReadingStats stats = ReadingStats.empty;
+  BrandingConfig branding = BrandingConfig.current;
   List<HistoryEntry> recent = const [];
   Set<int> planProgress = const {};
 
@@ -108,6 +110,7 @@ class AppState extends ChangeNotifier {
   ];
 
   Future<void> init() async {
+    branding = await BrandingConfig.load();
     audio.onComplete = _handleNarrationComplete;
     await audio.setRate(settings.audioRate);
     await audio.setVoice(

@@ -30,6 +30,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/branding.json
+    - assets/images/
     - assets/icon/app_icon.png
     - assets/bibles/en-kjv.json.gz
     - assets/data/catalog_fallback.json

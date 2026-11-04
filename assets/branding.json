@@ -1,0 +1,13 @@
+{
+  "appName": "Bible AI",
+  "shortName": "Bible AI",
+  "tagline": "Offline-first Bible reader with AI study perspectives and audio",
+  "organizationName": "",
+  "welcomeTitle": "Welcome to Bible AI",
+  "welcomeMessage": "Read offline, save your own study notes, and explore interpretations from several traditions.",
+  "websiteUrl": "",
+  "contactEmail": "",
+  "churchServiceInfo": "",
+  "logoAsset": "assets/icon/app_icon.png",
+  "bannerAsset": ""
+}

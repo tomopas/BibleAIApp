@@ -21,6 +21,7 @@ Designed for believers, students, and churches, Bible AI can be run **100% free 
 - ☁️ **100% Free Cloud Architecture**: Zero credit card required. Hosted on Render (FastAPI), MongoDB Atlas (M0 Shared), and Hugging Face Datasets (Git LFS CDN).
 - 🏛️ **Church & Local LAN Ready**: Full Docker Compose stack (`api`, `mongo`, `rustfs` S3, `nginx`) for air-gapped church networks or personal servers.
 - 🌐 **Full Web App (PWA)**: Responsive website version served directly at `/` with Scripture reader, comparative study perspectives, Kokoro-82M audio player, full-text search, reading plans, notes/highlights, and cloud sync.
+- 🎨 **Church & Fork Personalization (White-Label)**: Customize your church's fork in one command with your congregation's name, custom app icon, banner pictures, welcome greeting, service times, and website.
 - 📱 **Cross-Platform**: Web browser (desktop & mobile), Android release APKs and App Bundle (Google Play ready), and Windows desktop support.
 
 ---
@@ -85,7 +86,7 @@ The complete 66-book audio dataset (1,189 MP3s, ~2.14 GB) is published on Huggin
 
 ```text
 ├── android/                 # Android native project and Gradle build configs
-├── assets/                  # Bundled KJV text, fonts, and catalog fallback
+├── assets/                  # Bundled KJV text, fonts, branding, and catalog fallback
 ├── backend/                 # FastAPI REST API & Web App server
 │   ├── static/              # Responsive Web App (PWA: index.html, styles.css, app.js, sw.js)
 │   ├── ai.py                # Ollama client and study perspective templates
@@ -94,14 +95,16 @@ The complete 66-book audio dataset (1,189 MP3s, ~2.14 GB) is published on Huggin
 │   ├── translations.py      # Translation catalogue, chapter loader, and full-text search
 │   ├── Dockerfile           # Backend & Web App container definition
 │   └── requirements.txt     # Python API dependencies
+├── church_config.example.json # White-label church customization template
 ├── deploy/                  # Self-hosted Docker Compose stack (Mongo, RustFS, Nginx)
 ├── docs/                    # Documentation, screenshots, audio samples, and release guides
 ├── exports/                 # Portable JSON exports of interpretations (4,756 study notes)
 ├── lib/                     # Flutter cross-platform source code
+│   ├── core/                # Themes and branding configuration (branding.dart)
 │   ├── data/                # Database helpers, audio service, API client
 │   ├── state/               # Application state management (Provider)
 │   └── ui/                  # Screens, reader, audio player, theme
-├── scripts/                 # Automation scripts (e.g. keystore generator)
+├── scripts/                 # Automation scripts (personalization, keystores, icon generator)
 ├── shared/                  # Shared perspective definitions (perspectives.json)
 ├── tools/                   # Canon mappings and dataset tools
 └── worker/                  # Batch data generation scripts (Kokoro TTS, Ollama)
@@ -264,7 +267,93 @@ For complete instructions on generating release keys, signing configurations, an
 
 ---
 
-## 5. Python Worker (Data Generation)
+## 5. Personalizing for Your Church (White-Label Fork)
+
+Churches, ministries, and study groups can customize their own fork of Bible AI with:
+- **Custom Bible / App Name** (e.g. *"Grace Study Bible"*, *"St. Jude Scripture"*)
+- **Church / Ministry Name & Tagline** (e.g. *"Grace Community Church • Rooted in Faith"*)
+- **Custom Welcome Message** for first-time onboarding
+- **Church Website, Contact Email & Service Times / Location** with direct launch buttons
+- **Custom Pictures**:
+  - **App Icon & Logo**: Automatically scales and generates icons for Android, Web/PWA, and Windows desktop.
+  - **Church Banner / Hero Photo**: Displayed on the Home screen dashboard card.
+
+> [!NOTE]
+> The default version of this repository retains the official **Bible AI** branding. If you do not run the personalization tool, or if you run `--reset`, the app runs in standard Bible AI mode.
+
+### Quick Start: Interactive Setup Wizard
+
+Run the interactive setup tool from your terminal:
+
+```bash
+# Python (all platforms)
+python scripts/personalize.py
+
+# Or PowerShell (Windows)
+.\scripts\personalize.ps1
+```
+
+Follow the prompts to enter your Bible name, church information, and paths to your custom icon or banner pictures.
+
+### Configuration File Mode (`church_config.json`)
+
+For automated or reproducible builds, copy the provided template:
+
+```bash
+cp church_config.example.json church_config.json
+```
+
+Edit `church_config.json`:
+
+```json
+{
+  "appName": "Grace Bible",
+  "shortName": "Grace Bible",
+  "tagline": "Rooted in Faith, Growing in Grace",
+  "organizationName": "Grace Community Church",
+  "welcomeTitle": "Welcome to Grace Bible",
+  "welcomeMessage": "Welcome to our church study app. Read scripture offline, explore study perspectives, and grow in God's Word together.",
+  "websiteUrl": "https://gracechurch.example.com",
+  "contactEmail": "office@gracechurch.example.com",
+  "churchServiceInfo": "Sundays 10:00 AM • Main Sanctuary & Online",
+  "iconPath": "assets/images/church_logo.png",
+  "bannerPath": "assets/images/church_banner.png"
+}
+```
+
+Apply the configuration:
+
+```bash
+python scripts/personalize.py --config church_config.json
+```
+
+### CLI Arguments Mode
+
+You can also pass arguments directly:
+
+```bash
+python scripts/personalize.py \
+  --name "Grace Bible" \
+  --org "Grace Community Church" \
+  --website "https://gracechurch.example.com" \
+  --service-info "Sundays 10:00 AM • Main Sanctuary" \
+  --icon path/to/church_logo.png \
+  --banner path/to/sanctuary.jpg
+```
+
+### Resetting to Default Bible AI
+
+To immediately restore official Bible AI branding, manifests, and icons:
+
+```bash
+python scripts/personalize.py --reset
+# or in PowerShell:
+.\scripts\personalize.ps1 -Reset
+```
+
+---
+
+## 6. Python Worker (Data Generation)
 
 The Python worker is decoupled from the backend and is used for long-running batch generation jobs.
 
