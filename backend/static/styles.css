@@ -1498,20 +1498,33 @@ button, input, select, textarea {
   gap: 8px;
 }
 
+.desktop-only { display: inline; }
+.mobile-only { display: none; }
+
 /* Toast */
 .toast {
   position: fixed;
-  bottom: 85px;
+  top: calc(66px + env(safe-area-inset-top, 0px));
+  bottom: auto;
   left: 50%;
   transform: translateX(-50%);
   z-index: 80;
   background: var(--text);
   color: var(--bg);
-  padding: 10px 20px;
+  padding: 8px 18px;
   border-radius: 99px;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  animation: toastFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+  max-width: 90vw;
+}
+
+@keyframes toastFade {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 /* Mobile Bottom Nav */
@@ -1610,13 +1623,6 @@ button, input, select, textarea {
   .verses-paper {
     padding: 22px 18px;
   }
-  .toast {
-    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-    max-width: 90vw;
-  }
-  body.audio-active .toast {
-    bottom: calc(140px + env(safe-area-inset-bottom, 0px));
-  }
 }
 
 /* Audio Player Dock Smartphone Adaptation (<= 680px) */
@@ -1694,28 +1700,72 @@ button, input, select, textarea {
 
 /* Smartphones Portrait & Compact Devices (<= 640px) */
 @media (max-width: 640px) {
-  /* Header adjustments for small screens */
+  .desktop-only { display: none !important; }
+  .mobile-only { display: inline !important; }
+
+  /* Contextual Header per Active Tab */
   .top-header {
     height: calc(54px + env(safe-area-inset-top, 0px));
     padding-top: env(safe-area-inset-top, 0px);
-    padding-left: max(10px, env(safe-area-inset-left, 0px));
-    padding-right: max(10px, env(safe-area-inset-right, 0px));
-    gap: 6px;
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    gap: 8px;
   }
   .header-left, .header-center, .header-right {
-    gap: 5px;
+    gap: 6px;
   }
   .brand-btn {
     padding: 3px;
-    gap: 0;
-  }
-  .brand-title {
-    display: none; /* Keep logo mark visible, saving width */
+    gap: 6px;
   }
   .brand-logo-img {
     width: 28px;
     height: 28px;
   }
+  .brand-title {
+    font-size: 17px;
+  }
+
+  /* When on Home, Library, Settings tabs: hide chapter picker, show clean branding */
+  body[data-active-tab="home"] .header-center,
+  body[data-active-tab="library"] .header-center,
+  body[data-active-tab="settings"] .header-center {
+    display: none !important;
+  }
+  body[data-active-tab="home"] .brand-title,
+  body[data-active-tab="library"] .brand-title,
+  body[data-active-tab="settings"] .brand-title {
+    display: inline-block !important;
+  }
+  body[data-active-tab="home"] #toggleAiDrawerBtn,
+  body[data-active-tab="library"] #toggleAiDrawerBtn,
+  body[data-active-tab="settings"] #toggleAiDrawerBtn {
+    display: none !important;
+  }
+  body[data-active-tab="home"] #toggleAudioBarBtn,
+  body[data-active-tab="library"] #toggleAudioBarBtn,
+  body[data-active-tab="settings"] #toggleAudioBarBtn {
+    display: none !important;
+  }
+  body.audio-active[data-active-tab="home"] #toggleAudioBarBtn,
+  body.audio-active[data-active-tab="library"] #toggleAudioBarBtn,
+  body.audio-active[data-active-tab="settings"] #toggleAudioBarBtn {
+    display: inline-flex !important;
+  }
+  body[data-active-tab="read"] #quickThemeBtn,
+  body[data-active-tab="library"] #quickThemeBtn,
+  body[data-active-tab="settings"] #quickThemeBtn {
+    display: none !important;
+  }
+
+  /* When on Read tab: show passage picker in center, hide text title to preserve space */
+  body[data-active-tab="read"] .brand-title {
+    display: none !important;
+  }
+  body[data-active-tab="read"] .header-center {
+    display: flex !important;
+  }
+
   .ref-picker-btn {
     padding: 5px 9px;
     font-size: 13px;
@@ -1810,6 +1860,7 @@ button, input, select, textarea {
   .quick-jump-card {
     padding: 14px 12px;
     border-radius: 14px;
+    min-width: 0;
   }
   .quick-jump-form {
     padding: 6px 10px;
@@ -1821,6 +1872,7 @@ button, input, select, textarea {
     scrollbar-width: none;
     padding-bottom: 2px;
     margin-top: 10px;
+    min-width: 0;
   }
   .quick-chips::-webkit-scrollbar {
     display: none;
@@ -1899,7 +1951,7 @@ button, input, select, textarea {
     justify-content: center;
   }
 
-  /* Floating Bottom Verse Action Toolbar for Smartphones */
+  /* Sleek Floating Bottom Verse Action Toolbar for Smartphones */
   .verse-action-toolbar {
     position: fixed;
     top: auto;
@@ -1907,7 +1959,7 @@ button, input, select, textarea {
     left: 8px;
     right: 8px;
     margin-bottom: 0;
-    padding: 10px 12px;
+    padding: 8px 12px;
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
     backdrop-filter: blur(16px);
@@ -1915,7 +1967,7 @@ button, input, select, textarea {
     z-index: 52;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     animation: slideUpToolbar 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   body.audio-active .verse-action-toolbar {
@@ -1931,11 +1983,33 @@ button, input, select, textarea {
       transform: translateY(0);
     }
   }
-  .vat-left {
+  .vat-top-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .vat-top-row strong {
+    font-size: 13.5px;
+    color: var(--primary);
+  }
+  .highlight-swatches {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-right: none;
+    padding: 0;
+  }
+  .swatch {
+    width: 22px;
+    height: 22px;
+  }
+  .vat-close {
+    font-size: 20px;
+    padding: 0 4px;
+    color: var(--text-muted);
   }
   .vat-actions {
     display: grid;
@@ -1943,32 +2017,19 @@ button, input, select, textarea {
     gap: 6px;
     width: 100%;
   }
-  .highlight-swatches {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: center;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 0 0 8px 0;
-    gap: 12px;
-  }
-  .swatch {
-    width: 26px;
-    height: 26px;
-  }
   .vat-btn {
     padding: 7px 4px;
     font-size: 11px;
     font-weight: 600;
     justify-content: center;
-    flex-direction: column;
-    gap: 3px;
-    border-radius: 9px;
-    text-align: center;
+    flex-direction: row;
+    gap: 4px;
+    border-radius: 8px;
+    white-space: nowrap;
   }
   .vat-btn svg {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
   }
 
   /* Full-width AI Perspectives Drawer on Smartphones */

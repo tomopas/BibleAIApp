@@ -168,7 +168,7 @@
     showVerseNumbers: true,
     defaultPerspective: 'protestant',
     activePerspectiveFilter: 'all',
-    aiPanelOpen: true,
+    aiPanelOpen: window.innerWidth > 960,
     narrationSource: 'auto',
     audioSpeed: 1.0,
     audioAutoNext: false,
@@ -193,6 +193,9 @@
       if (!raw) return;
       const saved = JSON.parse(raw);
       Object.assign(state, saved);
+      if (window.innerWidth <= 960) {
+        state.aiPanelOpen = false;
+      }
     } catch (err) {
       console.warn('Could not load saved state:', err);
     }
@@ -288,6 +291,7 @@
   // Navigation Tabs
   function setTab(tabName) {
     state.tab = tabName;
+    document.body.setAttribute('data-active-tab', tabName);
     document.querySelectorAll('.tab-view').forEach((sec) => {
       sec.classList.toggle('active', sec.id === 'view-' + tabName);
     });
@@ -1719,6 +1723,10 @@
   // Initial Bootstrap
   async function initApp() {
     loadState();
+    if (window.innerWidth <= 960) {
+      state.aiPanelOpen = false;
+    }
+    document.body.setAttribute('data-active-tab', state.tab || 'home');
     applyThemeAndTypography();
     bindEvents();
 

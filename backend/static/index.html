@@ -219,11 +219,8 @@
 
             <!-- Selected Verse Action Bar (sticky when a verse is clicked) -->
             <div class="verse-action-toolbar hidden" id="verseActionToolbar">
-              <div class="vat-left">
+              <div class="vat-top-row">
                 <strong id="selectedVerseLabel">John 1:1</strong>
-                <button class="vat-close" id="closeVerseToolbarBtn" title="Deselect verse">&times;</button>
-              </div>
-              <div class="vat-actions">
                 <div class="highlight-swatches" title="Highlight Verse">
                   <button class="swatch swatch-gold" data-hl="gold" title="Gold Highlight"></button>
                   <button class="swatch swatch-green" data-hl="green" title="Green Highlight"></button>
@@ -231,6 +228,9 @@
                   <button class="swatch swatch-pink" data-hl="pink" title="Pink Highlight"></button>
                   <button class="swatch swatch-clear" data-hl="none" title="Clear Highlight">&times;</button>
                 </div>
+                <button class="vat-close" id="closeVerseToolbarBtn" title="Deselect verse">&times;</button>
+              </div>
+              <div class="vat-actions">
                 <button class="vat-btn" id="vatBookmarkBtn" title="Bookmark Verse">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                   <span id="vatBookmarkText">Bookmark</span>
@@ -244,7 +244,8 @@
                   <span>Copy</span>
                 </button>
                 <button class="vat-btn vat-btn-ai" id="vatStudyAiBtn" title="Open AI Perspectives for this passage">
-                  <span>✨ Perspectives</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg>
+                  <span>Perspectives</span>
                 </button>
               </div>
             </div>
@@ -527,8 +528,8 @@
         <input type="text" id="bookFilterInput" class="input-text" placeholder="Filter books (e.g. Psalms, Matthew, John)..." autocomplete="off" />
         <div class="testament-tabs">
           <button class="test-tab active" data-testament="all">All (66)</button>
-          <button class="test-tab" data-testament="OT">Old Testament (39)</button>
-          <button class="test-tab" data-testament="NT">New Testament (27)</button>
+          <button class="test-tab" data-testament="OT"><span class="desktop-only">Old Testament</span><span class="mobile-only">OT</span> (39)</button>
+          <button class="test-tab" data-testament="NT"><span class="desktop-only">New Testament</span><span class="mobile-only">NT</span> (27)</button>
         </div>
       </div>
       <div class="picker-columns">
