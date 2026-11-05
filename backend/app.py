@@ -372,7 +372,11 @@ Ollama: {ollama_status}</p>
 def index() -> FileResponse | HTMLResponse:
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
-        return FileResponse(index_file, media_type="text/html")
+        return FileResponse(
+            index_file,
+            media_type="text/html",
+            headers={"Cache-Control": "no-cache"},
+        )
     return HTMLResponse(_api_status_html())
 
 

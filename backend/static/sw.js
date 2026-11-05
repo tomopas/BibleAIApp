@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bibleai-web-v1';
+const CACHE_NAME = 'bibleai-web-v3';
 const SHELL_ASSETS = [
   '/',
   '/static/styles.css',
