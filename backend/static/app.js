@@ -572,6 +572,7 @@
   async function startChapterAudio() {
     const dock = document.getElementById('audioPlayerDock');
     if (dock) dock.classList.remove('hidden');
+    document.body.classList.add('audio-active');
 
     const book = BOOK_BY_ID[state.bookId] || BOOK_BY_ID['jhn'];
     const titleEl = document.getElementById('audioNowPlayingTitle');
@@ -1080,6 +1081,12 @@
     const modal = document.getElementById('bookPickerModal');
     if (modal) modal.classList.remove('hidden');
     renderModalBooksAndChapters();
+    setTimeout(() => {
+      const activeBtn = document.querySelector('#modalBooksList .book-row-btn.active');
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    }, 60);
   }
 
   function renderModalBooksAndChapters() {
@@ -1107,6 +1114,8 @@
         btn.onclick = () => {
           state.modalBookId = btn.dataset.pickBook;
           renderModalBooksAndChapters();
+          const chapsWrap = document.querySelector('.chapters-grid-wrap');
+          if (chapsWrap) chapsWrap.scrollTop = 0;
         };
       });
     }
@@ -1406,6 +1415,16 @@
       }
     });
 
+    // Dismiss modals when clicking the backdrop
+    ['bookPickerModal', 'searchModal', 'noteModal'].forEach((id) => {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.classList.add('hidden');
+        });
+      }
+    });
+
     // Reader Prev / Next chapter
     document.getElementById('prevChapterBtn')?.addEventListener('click', () => stepChapter(-1));
     document.getElementById('nextChapterBtn')?.addEventListener('click', () => stepChapter(1));
@@ -1580,6 +1599,7 @@
       } else if (dock) {
         stopAllAudio();
         dock.classList.add('hidden');
+        document.body.classList.remove('audio-active');
       }
     });
     document.getElementById('audioPlayPauseBtn')?.addEventListener('click', toggleAudioPlayPause);
@@ -1602,6 +1622,7 @@
     document.getElementById('audioCloseDockBtn')?.addEventListener('click', () => {
       stopAllAudio();
       document.getElementById('audioPlayerDock')?.classList.add('hidden');
+      document.body.classList.remove('audio-active');
     });
 
     // Library subtabs
